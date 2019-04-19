@@ -1,0 +1,177 @@
+{% extends "_base.html" %} 
+{% block breadcrumb %}
+<li class="breadcrumb-item active">控制台</li>
+{% endblock %} 
+{% block content %}
+{% load tag_filter %}
+<!-- /.row -->
+<div class="row">
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-inbox fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge">{{ devices }}</div>
+                        <div>设备总数</div>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'device_list' %}">
+                <div class="panel-footer">
+                    <span class="pull-left">查看详情</span>
+                    <span class="pull-right">
+                        <i class="fa fa-arrow-circle-right"></i>
+                    </span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-green">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-tasks fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge">{{nodes.count}}</div>
+                        <div>节点总数</div>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'node_list' %}">
+                <div class="panel-footer">
+                    <span class="pull-left">查看详情</span>
+                    <span class="pull-right">
+                        <i class="fa fa-arrow-circle-right"></i>
+                    </span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-yellow">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-user fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge">{{ users }}</div>
+                        <div>登录用户</div>
+                    </div>
+                </div>
+            </div>
+            <a href="#">
+                <div class="panel-footer">
+                    <span class="pull-left">查看详情</span>
+                    <span class="pull-right">
+                        <i class="fa fa-arrow-circle-right"></i>
+                    </span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-red">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-support fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge">{{ alert_users | length }}</div>
+                        <div>报警用户</div>
+                    </div>
+                </div>
+            </div>
+            <a href="#" data-target="#addAlertuserModal" data-toggle="modal">
+                <div class="panel-footer">
+                    <span class="pull-left">查看详情</span>
+                    <span class="pull-right">
+                        <i class="fa fa-arrow-circle-right"></i>
+                    </span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+<!-- /.row -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <i class="fa fa-fw fa-delicious"></i> 拓扑图
+            </div>
+            <div class="panel-body">
+                <div style="text-align:center">
+                    <div id="content"></div>
+                    <canvas id="canvas" height="1000" width="1050"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.row -->
+{% endblock %}
+{% load staticfiles %}
+{% block js %}
+<!--制作网络拓扑图-->
+<script src="{% static '/vendor/topology/jtopo-0.4.8-min.js' %}"></script>
+<script src="{% static '/vendor/topology/toolbar.js' %}"></script>
+{% endblock %}
+{% block script %}
+<script>
+    var canvas = document.getElementById('canvas');
+    var stage = new JTopo.Stage(canvas); // 创建一个舞台对象
+    showJTopoToobar(stage);
+    var scene = new JTopo.Scene(stage); // 创建一个场景对象
+    scene.alpha = 1;
+    double_n = {}
+
+    {% for node in nodes %}
+        var {{ node.name }} = addNode('{{ node.show_name }}',{{ node.x }},{{ node.y }},'{{ node.hint }}','{{ node.type }}',
+        {% if node.type != 'switch' and node.type != 'router' and node.type != 'firewall'%}
+        'True'
+        {% else %}
+        '{{ node.hint|get_status }}'
+        {% endif %})
+        double_n['{{ node.hint }}'] = '{{ node.name }}'
+    {% endfor %}
+
+    // 添加连接
+
+    {% for connect in nodes_connect %}
+        {% if connect.mode == 'optical' %}
+            addLightLink({{ connect.ip1|get_nodename }},{{ connect.ip2|get_nodename }})
+        {% else %}
+            addLink({{ connect.ip1|get_nodename }},{{ connect.ip2|get_nodename }})
+        {% endif %}
+    {% endfor %}
+    setInterval(function(){
+        $.ajax({
+            type: "get",
+            url: "/api/node/getall",
+            data: "",
+            dataType: "json",
+            success: function (response) {
+                for (var key in response){
+                    if (response[key]['status'] == null){
+                        
+                        changeNodeAbnormal(key,response[key]['ip'])
+                    }else{
+                        changeNodeNormal(key,response[key]['ip'])
+                    }
+                }
+            }
+        });
+    },10000)
+</script>
+{% endblock %}

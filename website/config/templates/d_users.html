@@ -1,0 +1,210 @@
+{% extends "_base.html" %}
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'device_list' %}">设备管理</a>
+</li>
+<li class="breadcrumb-item">
+    <a href="#">{{ object.ip }}</a>
+</li>
+<li class="breadcrumb-item active">用户列表</li>
+{% endblock %}
+{% block content %}
+{% load tag_filter %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <i class="fa fa-fw  fa-list "></i>
+                用户列表
+                <div class="pull-right">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default btn-xs" data-target="#help" data-toggle="modal">
+                            <i class="fa fa-fw fa-question-circle"></i>
+                        </button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default btn-xs" onclick="javascript:getConfig('{{device.id}}','true','/api/d-user/get/','/config/show-users/')">
+                            手动更新用户
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-users">
+                    <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>登录名</th>
+                        <th>状态</th>
+                        <th>用户等级</th>
+                        <th>访问限制</th>
+                        <th>用户组</th>
+                        <th>访问类型</th>
+                        <th>密码设置时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% if object.ip == '172.16.111.1' %}
+                        {% for username,value in users.items %}
+                        <tr>
+                            <td class="text-center">{{ forloop.counter }}</td>
+                            <td class="text-center">{{ username }}</td>
+                            <td class="text-center">{% if value.State  == 'Active'%}<p class="text-success">活动的</p>{%else%}<p class="text-danger">禁用的</p>{%endif%}</td>
+                            <td class="text-center">{{ value | get_key_value:'User-level' }}</td>
+                            <td class="text-center">{{ value | get_key_value:'Access-limit' }}</td>
+                            <td class="text-center">{{ value | get_key_value:'User-group' }}</td>
+                            <td class="text-center">{{ value | get_key_value:'Service-type' }}</td>
+                            <td class="text-center">{{ value | get_key_value:'Password-set-time' }}</td>
+                            <td class="text-center">
+                                {% if username != 'admin' %}
+                                <button type="button" class="btn btn-default btn-circle" data-toggle="modal" data-target="#deleteDUser" data-d-username="{{username}}">
+                                    <i class="fa fa-fw fa-trash-o "></i>
+                                </button>
+                                {% endif %}
+                                <a type="button" class="btn btn-default btn-circle" data-toggle="modal" data-target="#changePassword" data-d-username="{{username}}">
+                                    <i class="fa fa-fw fa-pencil"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    {% for username,value in users.items %}
+                        <tr>
+                            <td class="text-center">{{ forloop.counter }}</td>
+                            <td class="text-center">{{ username }}</td>
+                            <td class="text-center">{% if value.State  == 'active'%}<p class="text-success">活动的</p>{%else%}<p class="text-danger">禁用的</p>{%endif%}</td>
+                            <td class="text-center">{{ value | get_key_value:'Privilege level' }}</td>
+                            <td class="text-center">{{ value | get_key_value:'Access-limit' }}</td>
+                            <td class="text-center">{{ value | get_key_value:'User-group' }}</td>
+                            <td class="text-center">{{ value | get_key_value:'Service-type-mask' }}</td>
+                            <td class="text-center">{{ value | get_key_value:'Password-set-time' }}</td>
+                            <td class="text-center">
+                                {% if username != 'admin' %}
+                                <button type="button" class="btn btn-default btn-circle" data-toggle="modal" data-target="#deleteDUser" data-d-username="{{username}}">
+                                    <i class="fa fa-fw fa-trash-o "></i>
+                                </button>
+                                {% endif %}
+                                <a type="button" class="btn btn-default btn-circle" data-toggle="modal" data-target="#changePassword" data-d-username="{{username}}">
+                                    <i class="fa fa-fw fa-pencil"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade in" id="help" tabindex="-1" role="dialog" aria-labelledby="helpLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="helpLabel"><i class="fa fa-fw fa-question-circle"></i> 帮助信息</h4>
+            </div>
+            <div class="modal-body">
+                <h4>访问类型：</h4>
+                <blockquote>
+                    <small>T : TELNET</small>
+                    <small>S : SSH</small>
+                    <small>P : PPP</small>
+                    <small>H : HTTP</small>
+                    <small>W : WEB</small>
+                    <small>F : FTP</small>
+                </blockquote>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade in" id="deleteDUser" tabindex="-1" role="dialog" aria-labelledby="deleteDuserLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="deleteDuserLabel"><i class="glyphicon glyphicon-remove"></i> 删除用户</h4>
+            </div>
+            <div class="modal-body">
+                <p id="body-text">
+
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-primary" id="delete">确认</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade in" id="changePassword" tabindex="-1" role="dialog" aria-labelledby="changePasswordLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="changePasswordLabel"><i class="fa fa-fw fa-bomb"></i> 更改密码</h4>
+            </div>
+            <div class="modal-body">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-lg-2 control-label">新密码</label>
+                            <div class="col-lg-9">
+                                <input type="password" class="form-control" name="password1" id="password1">
+                                <p class="help-block">password1</p>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-lg-2 control-label">再次输入</label>
+                            <div class="col-lg-9">
+                                <input type="password" class="form-control" name="password2" id="password2">
+                                <p class="help-block">password2</p>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-primary" id="change">确认</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+{% include "_wait.html" %}
+{% endblock %}
+{% block js%}
+{% include "_table_js.html" %}
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function() {
+        changeDeviceUsersUI();
+    });
+    $('#deleteDUser').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // 触发事件的按钮
+        var username = button.data('d-username')
+        var modal = $(this)
+        modal.find('p').html('你确定要删除此设备上用户名为<code>' + username + '</code>的用户吗？')
+        $('#delete').click(function(){
+            deleteUser('{{object.id}}',username)
+        })
+    });
+    $('#changePassword').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // 触发事件的按钮
+        var username = button.data('d-username')
+        var modal = $(this)
+        $('#change').click(function(){
+            changePassword('{{object.id}}',username,'{{csrf_token}}')
+        })
+    });
+</script>
+{% endblock %}
+{% block css %}
+{% include "_table_css.html" %}
+{% endblock %}

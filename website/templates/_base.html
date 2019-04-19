@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load staticfiles %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>网络设备管理系统</title>
+    <link rel="icon" href="{% static '/img/favicon.ico' %}">
+    {% include "_head_css.html" %}
+    {% block css %}
+    {% endblock %}
+</head>
+
+<body>
+    <div id="wrapper">
+        <!-- Navigation -->
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{% url 'index' %}">网络设备管理</a>
+            </div>
+            <!-- /.navbar-header -->
+
+            <ul class="nav navbar-top-links navbar-right">
+                <li>
+                    <a href="{% url 'admin:index' %}"><i class="fa fa-fw fa-share"></i> 转到admin</a>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="fa fa-user fa-fw"></i> {{ request.user.username }} <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        <!-- <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+                        </li>
+                        <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
+                        </li> -->
+                        <!-- <li class="divider"></li> -->
+                        <li><a href="{% url 'logout' %}"><i class="fa fa-sign-out fa-fw"></i> 注销</a>
+                        </li>
+                    </ul>
+                    <!-- /.dropdown-user -->
+                </li>
+                <!-- /.dropdown -->
+            </ul>
+            <!-- /.navbar-top-links -->
+            <div class="navbar-default sidebar" role="navigation">
+                <div class="sidebar-nav navbar-collapse">
+                    <ul class="nav" id="side-menu">
+                        <li class="sidebar-search">
+                            <div class="input-group custom-search-form">
+                                <input type="text" class="form-control" placeholder="Search...">
+                                <span class="input-group-btn">
+                                <button class="btn btn-default" type="button">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </span>
+                            </div>
+                            <!-- /input-group -->
+                        </li>
+                        <li>
+                            <a href="{% url 'index' %}"><i class="fa fa-dashboard fa-fw"></i> 控制台</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-stethoscope fa-fw"></i> 拓扑节点<span class="fa arrow"></span></a>
+                            <ul class="nav nav-second-level">
+                                <li>
+                                    <a href="{% url 'node_list' %}">节点</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'connect_list' %}">节点互联</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-inbox  fa-fw"></i> 设备管理<span class="fa arrow"></span></a>
+                            <ul class="nav nav-second-level">
+                                <li>
+                                    <a href="{% url 'device_list' %}">设备</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'group_list' %}">设备组</a>
+                                </li>
+                                <li>
+                                    <a href="javascript:getAPlist('/api/ap/list')">AP</a>
+                                </li>
+                            </ul>
+                            <!-- /.nav-second-level -->
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-coffee  fa-fw"></i> 日志管理<span class="fa arrow"></span></a>
+                            <ul class="nav nav-second-level">
+                                <li>
+                                    <a href="{% url 'login_log' %}">登录日志</a>
+                                </li>
+                            </ul>
+                            <!-- /.nav-second-level -->
+                        </li>
+                        <li>
+                            <a href="{% url 'setting' %}"><i class="fa fa-gear fa-fw"></i> 设置</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-question "></i> 帮助</a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- /.sidebar-collapse -->
+            </div>
+            <!-- /.navbar-static-side -->
+        </nav>
+        <div id="page-wrapper">
+            {% include "_message.html" %}
+            <div class="row">
+                <div class="col-lg-12" style="margin-top:10px">
+                    <!-- Breadcrumbs-->
+                    <ol class="breadcrumb" style="padding:18px 15px">
+                    {% block breadcrumb %}
+                    {% endblock %}
+                    </ol>
+                </div>
+            </div>
+            {% block content %}
+            {% endblock %}
+        </div>
+        <!-- /#page-wrapper -->
+        {% include "_wait.html" %}
+    </div>
+    <!-- /#wrapper -->
+
+    {% include "_footer_js.html" %}
+    {% block js %}
+    {% endblock %}
+    {% block script %}
+    {% endblock %}
+</body>
+
+</html>

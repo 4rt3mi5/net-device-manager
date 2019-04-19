@@ -1,0 +1,501 @@
+{% extends "_base.html" %}
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'device_list' %}">设备管理</a>
+</li>
+<li class="breadcrumb-item active">
+    {{ object.ip }}
+</li>
+<li class="breadcrumb-item active">
+    监控视图
+</li>
+{% endblock %}
+{% load tag_filter%}
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <i class="fa fa-fw fa-line-chart"></i>
+                状态监控
+                <div class="pull-right">
+                    <div class="btn-group">
+                        <button class="btn btn-xs btn-default" data-target="#settingModal" data-toggle="modal">设置</button>
+                    </div>
+                    <div class="btn-group">
+                        <a href="javascript:getConfig('{{device.id}}','true','/api/monitor/get-port/','/monitor/chart/')" class="btn btn-xs btn-default">
+                            手动更新当前端口
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-lg-3">
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(HardwareChart,10,'hardware','{{object.id}}')">10min</button>
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(HardwareChart,20,'hardware','{{object.id}}')">20min</button>
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(HardwareChart,30,'hardware','{{object.id}}')">30min</button>
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(HardwareChart,40,'hardware','{{object.id}}')">40min</button>
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(HardwareChart,50,'hardware','{{object.id}}')">50min</button>
+                    </div>
+                    <div class="col-lg-4 col-lg-offset-5">
+                        <div class="input-group">
+                            <span class="input-group-addon">时间</span>
+                            <input type="text" class="input-sm form-control" id="hardware_time" value="{%now "Y-m-d H:i"%}">
+                            <span class="input-group-addon" style="cursor:pointer" onclick="searchTime(HardwareChart,'hardware','{{object.id}}')">
+                                <i class="fa fa-fw fa-search"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <canvas id="HardwareMonitoring"></canvas>
+                    </div>
+                    <div class="col-lg-12">
+                        <hr>
+                    </div>
+                    <div class="col-lg-2">
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(BandwidthChart,6,'bandwidth','{{object.id}}')">1h</button>
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(BandwidthChart,10,'bandwidth','{{object.id}}')">1.5h</button>
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(BandwidthChart,14,'bandwidth','{{object.id}}')">2h</button>
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(BandwidthChart,22,'bandwidth','{{object.id}}')">3h</button>
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(BandwidthChart,30,'bandwidth','{{object.id}}')">4h</button>
+                        <button class="btn btn-info btn-xs" data-toggle="modal" data-target="#addPortModal" style="margin-top: 10px">添加绑定端口</button>
+                    </div>  
+                    <div class="col-lg-4 col-lg-offset-6">
+                        <div class="input-group">
+                            <span class="input-group-addon">时间</span>
+                            <input type="text" class="input-sm form-control" id="bandwidth_time" value="{%now "Y-m-d H:i"%}">
+                            <span class="input-group-addon" style="cursor:pointer" onclick="searchTime(BandwidthChart,'bandwidth','{{object.id}}')">
+                                <i class="fa fa-fw fa-search"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-lg-offset-8" style="margin-top: 15px">
+                        <div class="input-group">
+                            <span class="input-group-addon">接口</span>
+                            <select name="" id="monitor_ports" class="form-control input-sm" onchange="getPortData('{{object.id}}')">
+                                {%for port in ports_of_bound%}
+                                <option value="{{port}}">{{port}}</option>
+                                {%endfor%}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <canvas id="BandwidthMonitoring"></canvas>
+                    </div>
+                    <div class="col-lg-12">
+                        <hr>
+                    </div>
+                    <div class="col-lg-3">
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(TemperatureChart,10,'temperature','{{object.id}}')">10min</button>
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(TemperatureChart,20,'temperature','{{object.id}}')">20min</button>
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(TemperatureChart,30,'temperature','{{object.id}}')">30min</button>
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(TemperatureChart,40,'temperature','{{object.id}}')">40min</button>
+                        <button class="btn btn-default btn-xs" onclick="updateDisplayDataTime(TemperatureChart,50,'temperature','{{object.id}}')">50min</button>
+                    </div>
+                    <div class="col-lg-4 col-lg-offset-5">
+                        <div class="input-group">
+                            <span class="input-group-addon">时间</span>
+                            <input type="text" class="input-sm form-control" id="tempearture_time" value="{%now "Y-m-d H:i"%}">
+                            <span class="input-group-addon" style="cursor:pointer" onclick="searchTime(TemperatureChart,'temperature','{{object.id}}')">
+                                <i class="fa fa-fw fa-search"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <canvas id="TemperatureMonitoring"></canvas>
+                    </div>
+                </div>
+            </div>
+        <div class="panel-footer small text-muted">
+            {%now "Y-m-d H:i"%}
+        </div>
+    </div>
+</div>
+</div>
+<div class="modal fade" id="addPortModal" tabindex="-1" role="dialog" aria-labelledby="addPortModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="addPortModalLabel">添加监控端口</h4>
+        </div>
+        <div class="modal-body">
+            <h4>当前已监控端口</h4>
+            <blockquote>
+                {%for port in ports_of_bound%}
+                <small>{{port}}</small>
+                {%endfor%}
+            </blockquote>
+            <div class="form-group">
+                <label>添加端口</label>
+                <select name="" id="port" class="form-control">
+                    {%for port in ports%}
+                    <option value="{{port.0}}">{{port.0}}</option>
+                    {%endfor%}
+                </select>
+                <p class="help-block">{%if ports%}* 仅显示双up未监控端口{%else%}请更新端口列表{%endif%}</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" onclick="boundPort('{{object.id}}')">确认添加</button>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="settingModal" tabindex="-1" role="dialog" aria-labelledby="settingModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="settingModalLabel"><i class="fa fa-fw fa-warning"></i> 设置报警阈值</h4>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-lg-12 form-group">
+                    <div class="form-group">
+                        <label class="col-lg-4 control-label">连续几次</label>
+                        <div class="col-lg-7">
+                            <input type="text" class="form-control" id="count_vpt" value="{{object.config|get_threshold:'count'}}">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12 form-group">
+                    <div class="form-group">
+                        <label class="col-lg-4 control-label">cpu阈值</label>
+                        <div class="col-lg-7">
+                            <input type="text" class="form-control" id="cpu_vpt" value="{{object.config|get_threshold:'cpu'}}">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12 form-group">
+                    <div class="form-group">
+                        <label class="col-lg-4 control-label">memory阈值</label>
+                        <div class="col-lg-7">
+                            <input type="text" class="form-control" id="memory_vpt" value="{{object.config|get_threshold:'memory'}}">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12 form-group">
+                    <div class="form-group">
+                        <label class="col-lg-4 control-label">upload阈值</label>
+                        <div class="col-lg-7">
+                            <input type="text" class="form-control" id="upload_vpt" value="{{object.config|get_threshold:'upload'}}">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12 form-group">
+                    <div class="form-group">
+                        <label class="col-lg-4 control-label">download阈值</label>
+                        <div class="col-lg-7">
+                            <input type="text" class="form-control" id="download_vpt" value="{{object.config|get_threshold:'download'}}">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12 form-group">
+                    <div class="form-group">
+                        <label class="col-lg-4 control-label">温度阈值</label>
+                        <div class="col-lg-7">
+                            <input type="text" class="form-control" id="temperature_vpt" value="{{object.config|get_threshold:'temp'}}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" onclick="javascript:changeTereshold('{{object.id}}')">确认</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% include "_wait.html" %}
+{% endblock %}
+{% load staticfiles %}
+{% block js %}
+<!-- Chart JavaScript -->
+<script src="{% static '/vendor/chart.js/Chart.min.js' %}"></script>
+<script src="{% static '/vendor/chart.js/Chart.bundle.min.js' %}"></script>
+{% endblock %}
+{% block script %}
+<script>
+    var ctx = document.getElementById("HardwareMonitoring");
+    var HardwareChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [{% for object in hardware_data %}'{{object.create_time}}',{% endfor %}],
+            datasets: [{
+                label: "CPU",
+                pointRadius: 5,
+                backgroundColor: "rgb(255, 99, 132)",
+                borderColor: "rgb(255, 99, 132)",
+                fill: false,
+                data: [{% for object in hardware_data %} {%if object.value == 0%}'0',{%else%}'{{ object.value.cpu }}',{%endif%} {% endfor %}],
+            },
+            {
+                label: "MEMORY",
+                pointRadius: 5,
+                backgroundColor: "rgb(54, 162, 235)",
+                borderColor: "rgb(54, 162, 235)",
+                fill: false,
+                data: [{% for object in hardware_data %} {%if object.value == 0%}'0',{%else%}'{{ object.value.memory }}',{%endif%} {% endfor %}],
+            }],
+        },
+        options: {
+            title: {
+                display: true,
+                text: '监控视图(%)'
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            responsive: true,
+            scales: {
+                xAxes: [{
+                    time: {
+                        unit: 'date'
+                    },
+                    gridLines: {
+                        display: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 20
+                    },
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time'
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        min: 0,
+                        max: 100,
+                        maxTicksLimit: 100
+                    },
+                    gridLines: {
+                        color: "rgba(0, 0, 0, .125)",
+                    },
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Value'
+                    }
+                }],
+            },
+            legend: {
+                display: true
+            }
+        }
+    });
+    var ctx = document.getElementById("BandwidthMonitoring");
+    var BandwidthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [{% for object in bandwidth_data %}'{{object.create_time}}',{% endfor %}],
+            datasets: [{
+                label: "Output",
+                pointRadius: 5,
+                backgroundColor: "rgb(75, 192, 192)",
+                borderColor: "rgb(75, 192, 192)",
+                fill: false,
+                data: [{% for object in bandwidth_data %}{%if object.value == 0%}'0',{%else%}'{{ object.value.upload }}',{%endif%} {% endfor %}],
+            },
+            {
+                label: "Input",
+                pointRadius: 5,
+                backgroundColor: "rgb(255, 159, 64)",
+                borderColor: "rgb(255, 159, 64)",
+                fill: false,
+                data: [{% for object in bandwidth_data %}{%if object.value == 0%}'0',{%else%}'{{ object.value.download }}',{%endif%} {% endfor %}],
+            }],
+        },
+        options: {
+            title: {
+                display: true,
+                text: '端口带宽视图(%)'
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            responsive: true,
+            scales: {
+                xAxes: [{
+                    time: {
+                        unit: 'date'
+                    },
+                    gridLines: {
+                        display: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 10
+                    },
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time'
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        min: 0,
+                        max: 100,
+                        maxTicksLimit: 100
+                    },
+                    gridLines: {
+                        color: "rgba(0, 0, 0, .125)",
+                    },
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Value'
+                    }
+                }],
+            },
+            legend: {
+                display: true
+            }
+        }
+    });
+    var ctx = document.getElementById("TemperatureMonitoring");
+    var TemperatureChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [{% for object in temperature_data %}'{{object.create_time}}',{% endfor %}],
+            datasets: [{
+                label: "Current",
+                pointRadius: 5,
+                backgroundColor: "rgb(153, 102, 255)",
+                borderColor: "rgb(153, 102, 255)",
+                fill: false,
+                data: [{% for object in temperature_data %}{%if object.value == 0%}'0',{%else%}'{{ object.value.current }}',{%endif%} {% endfor %}],
+            },
+            {
+                label: "Upper",
+                pointRadius: 5,
+                backgroundColor: "rgb(201, 203, 207)",
+                borderColor: "rgb(201, 203, 207)",
+                fill: false,
+                data: [{% for object in temperature_data %}{%if object.value == 0%}'0',{%else%}'{{ object.value.upper }}',{%endif%} {% endfor %}],
+            }],
+        },
+        options: {
+            title: {
+                display: true,
+                text: '设备温度(℃)'
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            responsive: true,
+            scales: {
+                xAxes: [{
+                    time: {
+                        unit: 'date'
+                    },
+                    gridLines: {
+                        display: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 20
+                    },
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time'
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        min: 0,
+                        max: 100,
+                        maxTicksLimit: 100
+                    },
+                    gridLines: {
+                        color: "rgba(0, 0, 0, .125)",
+                    },
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Value'
+                    }
+                }],
+            },
+            legend: {
+                display: true
+            }
+        }
+    });
+</script>
+<script>
+    var hardware_data_refresh = function() {
+        var last_time = HardwareChart.data.labels[HardwareChart.data.labels.length - 1]
+        $.ajax({
+            type: 'get',
+            url: '/api/monitor/new-data/' + '{{object.id}}',
+            timeout: 30000,
+            data: {
+                'type': 'hardware',
+                'last_time': last_time
+            },
+            dataType: 'json',
+            success: function(data) {
+                update_hardware_line_chart_data(data);
+            },
+        });
+    }
+    var temperature_data_refresh = function() {
+        var last_time = TemperatureChart.data.labels[TemperatureChart.data.labels.length - 1]
+        $.ajax({
+            type: 'get',
+            url: '/api/monitor/new-data/' + '{{object.id}}',
+            timeout: 30000,
+            data: {
+                'type': 'temperature',
+                'last_time': last_time
+            },
+            dataType: 'json',
+            success: function(data) {
+                update_temperature_line_chart_data(data);
+            },
+        });
+    }
+    var bandwidth_data_refresh = function() {
+        var last_time = BandwidthChart.data.labels[BandwidthChart.data.labels.length - 1]
+        var p =  $('#monitor_ports option:selected').val()
+        $.ajax({
+            type: 'get',
+            url: '/api/monitor/new-data/' + '{{object.id}}',
+            timeout: 30000,
+            data: {
+                'type': 'bandwidth',
+                'last_time': last_time,
+                'port': p
+            },
+            dataType: 'json',
+            success: function(data) {
+                update_bandwidth_line_chart_data(data);
+            },
+        });
+    }
+    var hardware_stop = setInterval(hardware_data_refresh, 60000);
+    var bandwidth_stop = setInterval(bandwidth_data_refresh, 600000);
+    var temperature_stop = setInterval(temperature_data_refresh, 1800000);
+</script>
+{% endblock %}

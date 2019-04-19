@@ -1,0 +1,116 @@
+{% extends "_base.html" %}
+{% load tag_filter %}
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'device_list' %}">设备管理</a>
+</li>
+<li class="breadcrumb-item">
+    <a href="">{{ object.ip }}</a>
+</li>
+<li class="breadcrumb-item active">全局配置</li>
+{% endblock %}
+{% block css %}
+<style>
+.keepIcon {
+    position: fixed;
+    width: 36px;
+    height: 36px;
+    right: 25px;
+    bottom: 10px;
+    cursor: pointer;
+    z-index: 150000;
+    padding: 0px;
+    border-width: 0px;
+    border-style: initial;
+    border-color: initial;
+    border-image: initial;
+    background: none;
+    margin: 0px;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <i class="fa fa-fw fa-info-circle"></i> 配置信息
+                <div class="pull-right">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                            查看其它设备
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu pull-right" role="menu">
+                            {% for device in devices %}
+                            <li><a href="#" onclick="javascript:addConfig('{{ device.id }}')" id="{{ device.id }}">{{ device.ip }} ({{device.alias}})</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default btn-xs" onclick="javascript:getConfig('{{object.id}}','true','/api/config/running/','/config/running/')">
+                            手动更新当前
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <ul class="timeline">
+                    <li>
+                        <div class="timeline-badge" data-toggle="tooltip" data-placement="right" title="点击选中进行对比ps:只有一个文件时无法选中"><i class="fa fa-check"></i>
+                        </div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4 class="timeline-title">{{object.ip}} ({{object.config_runningconfig_related.last.id}})</h4>
+                                <p><small class="text-muted"><i class="fa fa-clock-o"></i> {{object.config_runningconfig_related.last.create_time}}</small>
+                                </p>
+                            </div>
+                            <div class="timeline-body">
+                                <pre class="pre-scrollable">{{object.config_runningconfig_related.last.config|str_to_dict}}</pre>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<button class="btn btn-default btn-xs keepIcon" style="background-color: #ccc" onclick="javascript:diff()">
+    VS</button>
+{% endblock %}
+{% block script %}
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip('show')
+    })
+    function diff() {
+        var diff_t = []
+        var ret = /\((.+?)\)/g
+        var liitems = $('.timeline > li')
+        for (var pk=0;pk<liitems.length;pk++){
+            var classname = liitems[pk].children[0].className
+            if (classname.search('warning') != -1 || classname.search('danger') != -1 || classname.search('info') != -1 || classname.search('success') != -1){
+                var h4_line = liitems[pk].children[1].children[0].children[0].innerText
+                console.log(h4_line)
+                diff_t.push(h4_line.match(ret)[0].replace('(','').replace(')',''))
+            }
+        }
+        if (diff_t.length != 2){
+            alert('错误，最多只可以选择两个文件进行对比')
+            console.log(diff_t)
+            return
+        }else{
+            $.ajax({
+                type: "get",
+                url: "/api/config/diff",
+                data: {conf1:diff_t[0],conf2:diff_t[1]},
+                dataType: "json",
+                success: function (response) {
+                    console.log(response)
+                    window.open('/other?uuid=' + response.uuid)
+                }
+            });
+        }
+    }
+</script>
+{% endblock %}

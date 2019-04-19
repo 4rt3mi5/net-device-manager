@@ -1,0 +1,11 @@
+ndmenv/
+*.pyc
+__pycache__/
+.vscode/
+.idea/
+.DS_Store
+website/static/admin/
+djcelery/
+**/migrations/*.py
+!__init__.py
+difftmp/

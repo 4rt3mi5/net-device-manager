@@ -1,0 +1,51 @@
+diff --git a/website/config.ini b/website/config.ini
+index cfa4130..9b50e19 100644
+--- a/website/config.ini
++++ b/website/config.ini
+@@ -1,8 +1,8 @@
+ [uwsgi]
+-base = /Users/luxutao/Projects/ndm/website
++base = /var/www/ndm/website
+ module = website.wsgi
+ socket = 127.0.0.1:8888
+ workers = 2
+ master = true
+-daemonize = /tmp/uwsgi-ndm.log
+-pidfile = /tmp/uwsgi-ndm.pid
+\ No newline at end of file
++daemonize = /var/www/uwsgi-ndm.log
++pidfile = /var/www/uwsgi-ndm.pid
+diff --git a/website/users.txt b/website/users.txt
+index 58b0b92..e69de29 100644
+--- a/website/users.txt
++++ b/website/users.txt
+@@ -1 +0,0 @@
+-liyan
+diff --git a/website/utils/celery.sh b/website/utils/celery.sh
+index a855378..56ff12c 100644
+--- a/website/utils/celery.sh
++++ b/website/utils/celery.sh
+@@ -1,19 +1,19 @@
+ #!/usr/bin/env bash
+ 
+ function start_celery() {
+-    `cd ../ && celery multi start worker -A website -c 10 -l info --pidfile=/tmp/celery.pid --logfile=/tmp/celery.log`
++    `cd ../ && celery multi start worker -A website -c 10 -l info --pidfile=/var/www/ndm/celery.pid --logfile=/var/www/ndm/celery.log`
+     echo -e "\033[31m celery 开启成功 \033[0m"
+ }
+ function start_beat() {
+-    `cd ../ && celery beat -A website --pidfile=/tmp/beat.pid --logfile=/tmp/beat.log --detach`
++    `cd ../ && celery beat -A website --pidfile=/var/www/ndm/beat.pid --logfile=/var/www/ndm/beat.log --detach`
+     echo -e "\033[31m beat 开启成功 \033[0m"
+ }
+ function stop_celery() {
+-    `cd ../ && celery multi stop worker --pidfile=/tmp/celery.pid`
++    `cd ../ && celery multi stop worker --pidfile=/var/www/ndm/celery.pid`
+     echo -e "\033[31m celery 已停止 \033[0m"
+ }
+ function stop_beat() {
+-    `kill -9 $(cat /tmp/beat.pid)`
++    `kill -9 $(cat /var/www/ndm/beat.pid)`
+     echo -e "\033[31m beat 已停止 \033[0m"
+ }
+ case $1 in

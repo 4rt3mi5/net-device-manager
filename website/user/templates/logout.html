@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load staticfiles %}
+    <meta charset="UTF-8">
+    <title>网络设备管理系统</title>
+    <link rel="stylesheet icon" href="{% static '/img/favicon.ico' %}">
+    <link href="{% static '/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static '/css/sb-admin-2.css' %}" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6 col-lg-offset-3">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    提示信息
+                </div>
+                <div class="panel-body">
+                    <h3 class="text-center">注销系统成功！</h3>
+                    <p class="text-center">
+                        退出时间 {% now "Y/m/d H:i:s" %}
+                    </p>
+                    <a href="{% url 'login' %}">
+                        重新登录
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static '/vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static '/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+
+</body>
+</html>
